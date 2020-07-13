@@ -5,8 +5,8 @@ const usersControllers = require("../controllers/users-controllers");
 
 const router = express.Router();
 
-//GET all users, private route
-router.get("/", usersControllers.getAllUsers);
+//GET particular user, private route
+router.get("/:id", usersControllers.getUser);
 
 //POST, create new user and log in user, private route
 router.post(

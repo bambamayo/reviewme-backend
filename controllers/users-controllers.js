@@ -3,18 +3,19 @@ const { validationResult } = require("express-validator");
 const HttpError = require("../models/http-error");
 const User = require("../models/user-model");
 
-const getAllUsers = async (req, res, next) => {
-  let users;
+const getUser = async (req, res, next) => {
+  const userId = req.params.id;
+  let user;
   try {
-    users = await User.find({}, "-password, -__v");
+    user = await User.find({ _id: userId }, "-password, -__v");
   } catch (error) {
     return next(
-      new HttpError("Fetching users failed, please try again later", 404)
+      new HttpError("Fetching user failed, please try again later", 404)
     );
   }
   res.json({
-    message: "Users fetched successfully",
-    users: users.map((user) => user.toObject({ getters: true })),
+    message: "User fetched successfully",
+    user,
   });
 };
 
@@ -69,7 +70,7 @@ const signupUser = async (req, res, next) => {
 
   res.status(201).json({
     message: "created user successfully",
-    data: createdUser.toObject({ getters: true }),
+    data: createdUser,
   });
 };
 
@@ -97,10 +98,10 @@ const loginUser = async (req, res, next) => {
   }
   res.json({
     message: "logged in",
-    data: existingUser.toObject({ getters: true }),
+    data: existingUser,
   });
 };
 
-exports.getAllUsers = getAllUsers;
+exports.getUser = getUser;
 exports.signupUser = signupUser;
 exports.loginUser = loginUser;

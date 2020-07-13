@@ -20,7 +20,7 @@ const getAllReviews = async (req, res, next) => {
 
   res.json({
     message: "Reviews fetched successfully",
-    data: reviews.map((ur) => ur.toObject({ getters: true })),
+    data: reviews,
   });
 };
 
@@ -43,7 +43,7 @@ const getReviewById = async (req, res, next) => {
   }
   res.json({
     message: "review found successfully",
-    data: review.toObject({ getters: true }),
+    data: review,
   });
 };
 
@@ -69,7 +69,7 @@ const getReviewsByUserId = async (req, res, next) => {
 
   res.json({
     message: "user reviews found successfully",
-    data: userReviews.map((ur) => ur.toObject({ getters: true })),
+    data: userReviews,
   });
 };
 
@@ -157,7 +157,7 @@ const createNewReview = async (req, res, next) => {
 
   res.status(201).json({
     message: "created review successfuly",
-    data: createdReview.toObject({ getters: true }),
+    data: createdReview,
   });
 };
 
