@@ -5,8 +5,8 @@ const usersControllers = require("../controllers/users-controllers");
 
 const router = express.Router();
 
-//GET particular user, private route
-router.get("/:id", usersControllers.getUser);
+//Get, get all users
+router.get("/", usersControllers.getUsers);
 
 //POST, create new user and log in user, private route
 router.post(
@@ -37,6 +37,9 @@ router.post(
   usersControllers.loginUser
 );
 
-module.exports = router;
+// //PATCH, edit user, private route
+// router.patch("/:id", usersControllers.editUser);
 
-//name, username, email , password
+// //DELETE, delete user, private route
+// router.delete(":id", usersControllers.deleteUser);
+module.exports = router;

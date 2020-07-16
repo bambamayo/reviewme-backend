@@ -12,7 +12,7 @@ const getAllReviews = async (req, res, next) => {
     reviews = await Review.find({}, "-__v");
   } catch (err) {
     const error = new HttpError(
-      "Something went wrong, could not find reviews",
+      "Something went wrong, could not fetch reviews",
       500
     );
     return next(error);
