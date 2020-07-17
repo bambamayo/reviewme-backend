@@ -2,6 +2,7 @@ const express = require("express");
 const { check } = require("express-validator");
 
 const reviewsControllers = require("../controllers/reviews-controllers");
+const checkAuth = require("../middleware/check-auth");
 
 const router = express.Router();
 
@@ -11,12 +12,13 @@ router.get("/", reviewsControllers.getAllReviews);
 //GET a review with ID, public route
 router.get("/:id", reviewsControllers.getReviewById);
 
-//GET reviews related to a particular user, public route
+//GET reviews related to a particular user, public route *change to username maybe
 router.get("/:userId/reviews", reviewsControllers.getReviewsByUserId);
 
 //GET amount of reviews a particular place or item e.t.c has, public route
 router.get("/:name/count", reviewsControllers.getReviewsCount);
 
+router.use(checkAuth);
 //POST, add a new review , private route
 router.post(
   "/",

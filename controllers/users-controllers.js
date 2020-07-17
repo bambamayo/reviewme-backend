@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken");
 const HttpError = require("../models/http-error");
 const User = require("../models/user-model");
 
+//get all users
 const getUsers = async (req, res, next) => {
   let users;
   try {
@@ -15,8 +16,7 @@ const getUsers = async (req, res, next) => {
     );
   }
   res.json({
-    message: "Users fetched successfully",
-    data: users,
+    users,
   });
 };
 
@@ -126,6 +126,7 @@ const loginUser = async (req, res, next) => {
   try {
     isValidPassword = await bcrypt.compare(password, existingUser.password);
   } catch (error) {
+    console.log("bcrypt");
     return next(new HttpError("Could not log you in, please try again", 500));
   }
 
@@ -137,13 +138,14 @@ const loginUser = async (req, res, next) => {
   try {
     token = jwt.sign(
       {
-        userId: exisitngUser.id,
+        userId: existingUser.id,
         email: existingUser.email,
       },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
   } catch (error) {
+    console.log("jwt");
     return next(new HttpError("Log in failed, please try again later", 500));
   }
 

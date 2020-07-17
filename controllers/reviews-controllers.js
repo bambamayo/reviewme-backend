@@ -19,8 +19,7 @@ const getAllReviews = async (req, res, next) => {
   }
 
   res.json({
-    message: "Reviews fetched successfully",
-    data: reviews,
+    reviews,
   });
 };
 
@@ -42,8 +41,7 @@ const getReviewById = async (req, res, next) => {
     return next(new HttpError("Could not find a review with provided id", 404));
   }
   res.json({
-    message: "review found successfully",
-    data: review,
+    review,
   });
 };
 
@@ -68,8 +66,7 @@ const getReviewsByUserId = async (req, res, next) => {
   }
 
   res.json({
-    message: "user reviews found successfully",
-    data: userReviews,
+    userReviews,
   });
 };
 
@@ -94,8 +91,7 @@ const getReviewsCount = async (req, res, next) => {
   }
 
   res.json({
-    message: "review count found successfully",
-    data: { count },
+    count,
   });
 };
 
@@ -156,8 +152,7 @@ const createNewReview = async (req, res, next) => {
   }
 
   res.status(201).json({
-    message: "created review successfuly",
-    data: createdReview,
+    createdReview,
   });
 };
 
@@ -187,9 +182,7 @@ const updateReview = async (req, res, next) => {
     if (!review) {
       return next(new HttpError("Invalid review ID", 404));
     }
-    return res
-      .status(200)
-      .json({ message: "Review updated successfully", data: review });
+    return res.status(200).json({ review });
   } catch (err) {
     return next(
       new HttpError("Could not update review, please try again later", 500)
@@ -228,10 +221,7 @@ const deleteReview = async (req, res, next) => {
     );
   }
 
-  res.json({
-    message: "Review deleted successfully",
-    data: review,
-  });
+  res.status(204).end();
 };
 
 exports.getAllReviews = getAllReviews;
