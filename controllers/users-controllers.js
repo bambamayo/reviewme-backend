@@ -5,22 +5,31 @@ const jwt = require("jsonwebtoken");
 const HttpError = require("../models/http-error");
 const User = require("../models/user-model");
 
-//get all users
-const getUsers = async (req, res, next) => {
-  let users;
+//get current logged in user
+const getUserById = async (req, res, next) => {
+  const userId = req.user;
+  let user;
   try {
-    users = await User.find({});
-  } catch (error) {
+    user = await User.findById(userId);
+  } catch (err) {
     return next(
-      new HttpError("Fetching users failed, please try again later", 404)
+      new HttpError(
+        "Something went wrong, could not get user at this time",
+        500
+      )
     );
   }
+
+  if (!user) {
+    return next(new HttpError("Could not find a user with provided id", 404));
+  }
+
   res.json({
-    users,
+    user,
   });
 };
 
-//create user code
+//create user code ---- public route
 const signupUser = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -83,7 +92,6 @@ const signupUser = async (req, res, next) => {
     token = jwt.sign(
       {
         userId: createdUser.id,
-        email: createdUser.email,
       },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
@@ -100,7 +108,7 @@ const signupUser = async (req, res, next) => {
   });
 };
 
-//login user code
+//login user code --- public route
 const loginUser = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -139,7 +147,6 @@ const loginUser = async (req, res, next) => {
     token = jwt.sign(
       {
         userId: existingUser.id,
-        email: existingUser.email,
       },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
@@ -155,6 +162,6 @@ const loginUser = async (req, res, next) => {
   });
 };
 
-exports.getUsers = getUsers;
+exports.getUserById = getUserById;
 exports.signupUser = signupUser;
 exports.loginUser = loginUser;

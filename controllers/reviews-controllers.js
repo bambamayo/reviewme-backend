@@ -59,12 +59,6 @@ const getReviewsByUserId = async (req, res, next) => {
     return next(error);
   }
 
-  if (!userReviews || userReviews.length === 0) {
-    return next(
-      new HttpError("Could not find review(s) for user with specified id", 404)
-    );
-  }
-
   res.json({
     userReviews,
   });
@@ -173,6 +167,19 @@ const updateReview = async (req, res, next) => {
   );
 
   if (!isValidOperation) return next(new HttpError("Invalid update(s)", 400));
+
+  let verifySender;
+  try {
+    verifySender = await Review.findById(req.params.id);
+  } catch (error) {
+    return next(new HttpError("Could not update review, please try again"));
+  }
+
+  if (verifySender.author.toString() !== req.userData.userId) {
+    return next(
+      new HttpError("You are not allowed to perform this operation", 401)
+    );
+  }
 
   try {
     const review = await Review.findByIdAndUpdate(req.params.id, req.body, {
