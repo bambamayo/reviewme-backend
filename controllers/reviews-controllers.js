@@ -106,7 +106,6 @@ const createNewReview = async (req, res, next) => {
     address,
     reviewDetails,
     images,
-    author,
   } = req.body;
   const createdReview = new Review({
     reviewedName,
@@ -117,12 +116,12 @@ const createNewReview = async (req, res, next) => {
     address,
     reviewDetails,
     images,
-    author,
+    author: req.user,
   });
 
   let user;
   try {
-    user = await User.findById(author);
+    user = await User.findById(req.user);
   } catch (err) {
     return next(new HttpError("Creating review failed, please try again", 500));
   }
@@ -168,14 +167,14 @@ const updateReview = async (req, res, next) => {
 
   if (!isValidOperation) return next(new HttpError("Invalid update(s)", 400));
 
-  let verifySender;
+  let verifyUser;
   try {
-    verifySender = await Review.findById(req.params.id);
+    verifyUser = await Review.findById(req.params.id);
   } catch (error) {
     return next(new HttpError("Could not update review, please try again"));
   }
 
-  if (verifySender.author.toString() !== req.userData.userId) {
+  if (verifyUser.author.toString() !== req.user) {
     return next(
       new HttpError("You are not allowed to perform this operation", 401)
     );
@@ -213,6 +212,19 @@ const deleteReview = async (req, res, next) => {
 
   if (!review) {
     return next(new HttpError("Could not find a review with provided id", 404));
+  }
+
+  let verifyUser;
+  try {
+    verifyUser = await Review.findById(req.params.id);
+  } catch (error) {
+    return next(new HttpError("Could not update review, please try again"));
+  }
+
+  if (verifyUser.author.toString() !== req.user) {
+    return next(
+      new HttpError("You are not allowed to perform this operation", 401)
+    );
   }
 
   try {
