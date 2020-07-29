@@ -2,7 +2,7 @@ const express = require("express");
 const { check } = require("express-validator");
 
 const reviewsControllers = require("../controllers/reviews-controllers");
-const checkAuth = require("../middleware/check-auth");
+const auth = require("../middleware/check-auth");
 
 const router = express.Router();
 
@@ -18,10 +18,10 @@ router.get("/:userId/reviews", reviewsControllers.getReviewsByUserId);
 //GET amount of reviews a particular place or item e.t.c has, public route
 router.get("/:name/count", reviewsControllers.getReviewsCount);
 
-router.use(checkAuth);
 //POST, add a new review , private route
 router.post(
   "/",
+  auth,
   [
     check("reviewedName")
       .isString()
@@ -49,9 +49,9 @@ router.post(
 );
 
 //PATCH, update existing review, private route
-router.patch("/:id", reviewsControllers.updateReview);
+router.patch("/:id", auth, reviewsControllers.updateReview);
 
 //PATCH, update existing review, private route
-router.delete("/:id", reviewsControllers.deleteReview);
+router.delete("/:id", auth, reviewsControllers.deleteReview);
 
 module.exports = router;
