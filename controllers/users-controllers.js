@@ -1,9 +1,11 @@
 const { validationResult } = require("express-validator");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const mongoose = require("mongoose");
 
 const HttpError = require("../models/http-error");
 const User = require("../models/user-model");
+const Review = require("../models/review-model");
 
 //get current logged in user
 const getUserById = async (req, res, next) => {
@@ -162,6 +164,100 @@ const loginUser = async (req, res, next) => {
   });
 };
 
+//edit user details - private route
+const updateUser = async (req, res, next) => {
+  const updates = Object.keys(req.body);
+  const allowedUpdates = [
+    "username",
+    "fullname",
+    "email",
+    "avatar",
+    "userThumbnail",
+  ];
+  const isValidOperation = updates.every((update) =>
+    allowedUpdates.includes(update)
+  );
+
+  if (!isValidOperation) return next(new HttpError("Invalid update(s)", 400));
+
+  let verifyUser;
+  try {
+    verifyUser = await User.findById(req.params.id);
+  } catch (error) {
+    return next(new HttpError("Could not update user, please try again"));
+  }
+
+  if (verifyUser.id.toString() !== req.user) {
+    return next(
+      new HttpError("You are not allowed to perform this operation", 401)
+    );
+  }
+
+  try {
+    const user = await User.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
+    if (!user) {
+      return next(new HttpError("Invalid user id", 404));
+    }
+    return res.status(200).json({ user });
+  } catch (err) {
+    return next(
+      new HttpError("Could not update user, please try again later", 500)
+    );
+  }
+};
+
+//Delete user profile
+const deleteUser = async (req, res, next) => {
+  const userId = req.params.id;
+  let user;
+  try {
+    user = await User.findById(userId).populate("postedReviews");
+  } catch (err) {
+    return next(
+      new HttpError("Something went wrong, could not delete review", 500)
+    );
+  }
+  if (!user) {
+    return next(new HttpError("Could not a find a user with provided id", 404));
+  }
+
+  let verifyUser;
+  try {
+    verifyUser = await User.findById(req.params.id);
+  } catch (err) {
+    return next(new HttpError("Could not delete user, please try again"));
+  }
+
+  if (verifyUser.id !== req.user) {
+    return next(
+      new HttpError("You are not allowed to perform this operation", 401)
+    );
+  }
+
+  let userIdObj = mongoose.Types.ObjectId(req.user);
+
+  try {
+    const sess = await mongoose.startSession();
+    sess.startTransaction();
+    await user.remove({ session: sess });
+    await Review.deleteMany({ author: userIdObj });
+    await sess.commitTransaction();
+  } catch (err) {
+    return next(
+      new HttpError(
+        "Something went wrong during transaction, could not delete user",
+        500
+      )
+    );
+  }
+
+  res.status(204).end();
+};
+
 exports.getUserById = getUserById;
 exports.signupUser = signupUser;
 exports.loginUser = loginUser;
+exports.updateUser = updateUser;
+exports.deleteUser = deleteUser;

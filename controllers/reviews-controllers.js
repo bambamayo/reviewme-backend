@@ -40,6 +40,7 @@ const getReviewById = async (req, res, next) => {
   if (!review) {
     return next(new HttpError("Could not find a review with provided id", 404));
   }
+  console.log(typeof review.author);
   res.json({
     review,
   });
@@ -218,7 +219,7 @@ const deleteReview = async (req, res, next) => {
   try {
     verifyUser = await Review.findById(req.params.id);
   } catch (error) {
-    return next(new HttpError("Could not update review, please try again"));
+    return next(new HttpError("Could not delete review, please try again"));
   }
 
   if (verifyUser.author.toString() !== req.user) {
