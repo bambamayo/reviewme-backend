@@ -37,9 +37,10 @@ router.post(
   usersControllers.loginUser
 );
 
-// //PATCH, edit user, private route
-// router.patch("/:id", usersControllers.editUser);
+// PATCH, edit user, private route
+router.patch("/:id", auth, usersControllers.updateUser);
 
-// //DELETE, delete user, private route
-// router.delete(":id", usersControllers.deleteUser);
+// DELETE, delete user, private route
+router.delete("/:id", auth, usersControllers.deleteUser);
+
 module.exports = router;
