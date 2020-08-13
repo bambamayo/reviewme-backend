@@ -40,7 +40,6 @@ const getReviewById = async (req, res, next) => {
   if (!review) {
     return next(new HttpError("Could not find a review with provided id", 404));
   }
-  console.log(typeof review.author);
   res.json({
     review,
   });

@@ -136,7 +136,6 @@ const loginUser = async (req, res, next) => {
   try {
     isValidPassword = await bcrypt.compare(password, existingUser.password);
   } catch (error) {
-    console.log("bcrypt");
     return next(new HttpError("Could not log you in, please try again", 500));
   }
 
@@ -154,7 +153,6 @@ const loginUser = async (req, res, next) => {
       { expiresIn: "1h" }
     );
   } catch (error) {
-    console.log("jwt");
     return next(new HttpError("Log in failed, please try again later", 500));
   }
 
