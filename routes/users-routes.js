@@ -3,6 +3,8 @@ const { check } = require("express-validator");
 
 const usersControllers = require("../controllers/users-controllers");
 const auth = require("../middleware/check-auth");
+const { multerUploads } = require("../config/multer");
+
 const router = express.Router();
 
 //Get, get loged in user private route
@@ -39,6 +41,12 @@ router.post(
 
 // PATCH, edit user, private route
 router.patch("/:id", auth, usersControllers.updateUser);
+
+router.patch(
+  "/:id/profilepicture",
+  multerUploads,
+  usersControllers.updateProfilePicture
+);
 
 // DELETE, delete user, private route
 router.delete("/:id", auth, usersControllers.deleteUser);

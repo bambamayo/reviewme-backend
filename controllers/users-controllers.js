@@ -6,6 +6,8 @@ const mongoose = require("mongoose");
 const HttpError = require("../models/http-error");
 const User = require("../models/user-model");
 const Review = require("../models/review-model");
+const { dataUri } = require("../config/multer");
+const { uploader } = require("../config/cloudinaryConfig");
 
 //get current logged in user
 const getUserById = async (req, res, next) => {
@@ -206,6 +208,32 @@ const updateUser = async (req, res, next) => {
   }
 };
 
+const updateProfilePicture = (req, res, next) => {
+  if (req.file) {
+    const file = dataUri(req);
+    return uploader
+      .upload(file)
+      .then((result) => {
+        const image = result.url;
+        return res.status(200).json({
+          messge: "Your image has been uploded successfully to cloudinary",
+          data: {
+            image,
+            publicId: result.public_id,
+          },
+        });
+      })
+      .catch((err) =>
+        res.status(400).json({
+          messge: "someting went wrong while processing your request",
+          data: {
+            err,
+          },
+        })
+      );
+  }
+};
+
 //Delete user profile
 const deleteUser = async (req, res, next) => {
   const userId = req.params.id;
@@ -258,4 +286,5 @@ exports.getUserById = getUserById;
 exports.signupUser = signupUser;
 exports.loginUser = loginUser;
 exports.updateUser = updateUser;
+exports.updateProfilePicture = updateProfilePicture;
 exports.deleteUser = deleteUser;
