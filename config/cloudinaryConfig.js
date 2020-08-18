@@ -1,4 +1,4 @@
-const { config, uploader } = require("cloudinary");
+const { config, uploader } = require("cloudinary").v2;
 const cloudinaryConfig = (req, res, next) => {
   config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,

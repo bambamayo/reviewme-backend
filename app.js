@@ -6,7 +6,7 @@ const cors = require("cors");
 const reviewsRoutes = require("./routes/reviews-routes");
 const usersRoutes = require("./routes/users-routes");
 const HttpError = require("./models/http-error");
-const { cloudinaryConfig } = require("./config/cloudinaryConfig");
+const { uploader, cloudinaryConfig } = require("./config/cloudinaryConfig");
 
 const app = express();
 

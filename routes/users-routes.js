@@ -44,6 +44,7 @@ router.patch("/:id", auth, usersControllers.updateUser);
 
 router.patch(
   "/:id/profilepicture",
+  auth,
   multerUploads,
   usersControllers.updateProfilePicture
 );
