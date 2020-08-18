@@ -167,13 +167,7 @@ const loginUser = async (req, res, next) => {
 //edit user details - private route
 const updateUser = async (req, res, next) => {
   const updates = Object.keys(req.body);
-  const allowedUpdates = [
-    "username",
-    "fullname",
-    "email",
-    "avatar",
-    "userThumbnail",
-  ];
+  const allowedUpdates = ["username", "fullname", "email"];
   const isValidOperation = updates.every((update) =>
     allowedUpdates.includes(update)
   );
@@ -184,7 +178,7 @@ const updateUser = async (req, res, next) => {
   try {
     verifyUser = await User.findById(req.params.id);
   } catch (error) {
-    return next(new HttpError("Could not update user, please try again"));
+    return next(new HttpError("Could not update user, please try again", 500));
   }
 
   if (verifyUser.id.toString() !== req.user) {
@@ -208,29 +202,66 @@ const updateUser = async (req, res, next) => {
   }
 };
 
-const updateProfilePicture = (req, res, next) => {
+const updateProfilePicture = async (req, res, next) => {
+  //Create a variable to check if user has authorization to perform action
+  let verifyUser;
+  try {
+    //Get user with the user id
+    verifyUser = await User.findById(req.params.id);
+  } catch (error) {
+    return next(new HttpError("Could not update user, please try again", 500));
+  }
+
+  //The auth middleware returns a user id
+  //Check if the user id auth returns equals verfiyUser id
+  if (verifyUser.id.toString() !== req.user) {
+    return next(
+      new HttpError("You are not allowed to perform this operation", 401)
+    );
+  }
+  //Check if there is a req.file object
   if (req.file) {
+    //Change buffer multer middleware returns us to a file cloudinary can parse
     const file = dataUri(req);
     return uploader
-      .upload(file)
-      .then((result) => {
-        const image = result.url;
-        return res.status(200).json({
-          messge: "Your image has been uploded successfully to cloudinary",
-          data: {
-            image,
-            publicId: result.public_id,
-          },
-        });
+      .upload(file, {
+        folder: "users_profile_picture/user1/",
+        public_id: "user1_profile_picture",
       })
-      .catch((err) =>
-        res.status(400).json({
-          messge: "someting went wrong while processing your request",
-          data: {
-            err,
-          },
-        })
-      );
+      .then(async (result) => {
+        //Find user by user id and edit avatarPublicId field
+        try {
+          const user = await User.findByIdAndUpdate(
+            req.params.id,
+            { avatarPublicId: result.public_id },
+            {
+              new: true,
+            }
+          );
+          //Return error if no user with specified id
+          if (!user) {
+            return next(new HttpError("Invalid user id", 404));
+          }
+          // Return success message with user details
+          return res.status(200).json({
+            messge: "Your profile picture has been uploaded successfully",
+            user,
+          });
+        } catch (error) {
+          return next(
+            new HttpError("Could not update user, please try again later", 500)
+          );
+        }
+      })
+      .catch((err) => {
+        //This is called if there is any error when updating avatarPublicId field
+        return next(
+          new HttpError(
+            "Something went wrong could not perform operation, please try again",
+            400
+          )
+        );
+      });
   }
 };
 
