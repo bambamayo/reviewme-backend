@@ -176,7 +176,7 @@ const updateUser = async (req, res, next) => {
 
   let verifyUser;
   try {
-    verifyUser = await User.findById(req.params.id);
+    verifyUser = await User.findById(req.params.userId);
   } catch (error) {
     return next(new HttpError("Could not update user, please try again", 500));
   }
@@ -188,7 +188,7 @@ const updateUser = async (req, res, next) => {
   }
 
   try {
-    const user = await User.findByIdAndUpdate(req.params.id, req.body, {
+    const user = await User.findByIdAndUpdate(req.params.userId, req.body, {
       new: true,
     });
     if (!user) {
@@ -225,8 +225,8 @@ const updateProfilePicture = async (req, res, next) => {
     const file = dataUri(req);
     return uploader
       .upload(file, {
-        folder: "users_profile_picture/user1/",
-        public_id: "user1_profile_picture",
+        folder: "users_profile_picture/",
+        public_id: `${verifyUser.username}_profile_picture`,
       })
       .then(async (result) => {
         //Find user by user id and edit avatarPublicId field

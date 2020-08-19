@@ -40,7 +40,7 @@ router.post(
 );
 
 // PATCH, edit user, private route
-router.patch("/:id", auth, usersControllers.updateUser);
+router.patch("/:userId", auth, usersControllers.updateUser);
 
 router.patch(
   "/:id/profilepicture",
