@@ -254,7 +254,7 @@ const updateProfilePicture = async (req, res, next) => {
           }
           // Return success message with user details
           return res.status(200).json({
-            message: "Your profile picture has been uploaded successfully",
+            message: "Your profile picture has been updated successfully",
             user,
           });
         } catch (error) {
@@ -272,6 +272,58 @@ const updateProfilePicture = async (req, res, next) => {
           )
         );
       });
+  }
+};
+
+//Delete profile picture
+const deleteProfilePicture = async (req, res, next) => {
+  let verifyUser;
+  try {
+    //Get user with the user id
+    verifyUser = await User.findById(req.params.id);
+  } catch (error) {
+    return next(new HttpError("Could not update user, please try again", 500));
+  }
+
+  //The auth middleware returns a user id
+  //Check if the user id auth returns equals verfiyUser id
+  if (verifyUser.id.toString() !== req.user) {
+    return next(
+      new HttpError("You are not allowed to perform this operation", 401)
+    );
+  }
+
+  if (verifyUser.avatarPublicId) {
+    uploader.destroy(verifyUser.avatarPublicId, async function (error, result) {
+      if (error) {
+        return next(
+          new HttpError("Could not perform operation, please try again", 500)
+        );
+      }
+    });
+  }
+
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      { avatarPublicId: "" },
+      {
+        new: true,
+      }
+    );
+    //Return error if no user with specified id
+    if (!user) {
+      return next(new HttpError("Invalid user id", 404));
+    }
+    // Return success message with user details
+    return res.status(200).json({
+      message: "Your profile picture has been updated successfully",
+      user,
+    });
+  } catch (error) {
+    return next(
+      new HttpError("Could not update user, please try again later", 500)
+    );
   }
 };
 
@@ -339,4 +391,5 @@ exports.signupUser = signupUser;
 exports.loginUser = loginUser;
 exports.updateUser = updateUser;
 exports.updateProfilePicture = updateProfilePicture;
+exports.deleteProfilePicture = deleteProfilePicture;
 exports.deleteUser = deleteUser;
