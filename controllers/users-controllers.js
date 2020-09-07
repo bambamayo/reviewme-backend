@@ -219,6 +219,17 @@ const updateProfilePicture = async (req, res, next) => {
       new HttpError("You are not allowed to perform this operation", 401)
     );
   }
+
+  //Check if user already has a avatarPublicId and delete it
+  if (verifyUser.avatarPublicId) {
+    uploader.destroy(verifyUser.avatarPublicId, async function (error, result) {
+      if (error) {
+        return next(
+          new HttpError("Could not perform operation, please try again", 500)
+        );
+      }
+    });
+  }
   //Check if there is a req.file object
   if (req.file) {
     //Change buffer multer middleware returns us to a file cloudinary can parse
@@ -226,7 +237,6 @@ const updateProfilePicture = async (req, res, next) => {
     return uploader
       .upload(file, {
         folder: "users_profile_picture/",
-        public_id: `${verifyUser.username}_profile_picture`,
       })
       .then(async (result) => {
         //Find user by user id and edit avatarPublicId field
@@ -244,7 +254,7 @@ const updateProfilePicture = async (req, res, next) => {
           }
           // Return success message with user details
           return res.status(200).json({
-            messge: "Your profile picture has been uploaded successfully",
+            message: "Your profile picture has been uploaded successfully",
             user,
           });
         } catch (error) {
@@ -291,6 +301,17 @@ const deleteUser = async (req, res, next) => {
     return next(
       new HttpError("You are not allowed to perform this operation", 401)
     );
+  }
+
+  //Check if user has a avatarPublicId and delete it
+  if (verifyUser.avatarPublicId) {
+    uploader.destroy(verifyUser.avatarPublicId, async function (error, result) {
+      if (error) {
+        return next(
+          new HttpError("Could not perform operation, please try again", 500)
+        );
+      }
+    });
   }
 
   let userIdObj = mongoose.Types.ObjectId(req.user);
