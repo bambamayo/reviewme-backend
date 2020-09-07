@@ -49,6 +49,12 @@ router.patch(
   usersControllers.updateProfilePicture
 );
 
+router.patch(
+  "/:id/profilepicture/delete",
+  auth,
+  usersControllers.deleteProfilePicture
+);
+
 // DELETE, delete user, private route
 router.delete("/:id", auth, usersControllers.deleteUser);
 
