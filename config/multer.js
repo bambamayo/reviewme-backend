@@ -13,10 +13,3 @@ const dataUri = (req) =>
     .content;
 
 module.exports = { multerUploads, dataUri };
-
-// const parser = new DatauriParser();
-// // for getting the string from the file buffer
-// const file = parser.format(
-// path.extname(req.file.originalname).toString(),
-// req.file.buffer
-// ).content;
