@@ -9,7 +9,9 @@ const User = require("../models/user-model");
 const getAllReviews = async (req, res, next) => {
   let reviews;
   try {
-    reviews = await Review.find({}, "-__v");
+    reviews = await Review.find({}, null, { sort: { createdAt: -1 } }).populate(
+      "author"
+    );
   } catch (err) {
     const error = new HttpError(
       "Something went wrong, could not fetch reviews",
@@ -28,7 +30,7 @@ const getReviewById = async (req, res, next) => {
   const reviewId = req.params.id;
   let review;
   try {
-    review = await Review.findById(reviewId);
+    review = await Review.findById(reviewId).populate("author");
   } catch (err) {
     const error = new HttpError(
       "Something went wrong, please try again later",
@@ -50,7 +52,9 @@ const getReviewsByUserId = async (req, res, next) => {
   const userId = req.params.userId;
   let userReviews;
   try {
-    userReviews = await Review.find({ author: userId });
+    userReviews = await Review.find({ author: userId }).populate({
+      path: "author",
+    });
   } catch (err) {
     const error = new HttpError(
       "Fetching user reviews failed please try again",
