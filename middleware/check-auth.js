@@ -12,7 +12,9 @@ module.exports = (req, res, next) => {
 
   //Check if token is not present
   if (!token) {
-    return next(new HttpError("No token, authorization denied"));
+    return next(
+      new HttpError("You do not have authorization to perform this operation")
+    );
   }
 
   try {
