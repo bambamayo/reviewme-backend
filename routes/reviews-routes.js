@@ -9,8 +9,11 @@ const router = express.Router();
 //GET all reviews, public route
 router.get("/", reviewsControllers.getAllReviews);
 
-//GET reviews with the particula name, public route
+//GET review with review id, public route
 router.get("/:id", reviewsControllers.getReviewById);
+
+//GET reviews with a particular name, public route
+router.get("/:reviewName/list", reviewsControllers.getReviewsByName);
 
 //GET reviews related to a particular user, public route *change to username maybe
 router.get("/:userId/reviews", reviewsControllers.getReviewsByUserId);
