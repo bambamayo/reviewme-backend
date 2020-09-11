@@ -47,32 +47,6 @@ const getReviewById = async (req, res, next) => {
   });
 };
 
-// Get a reviews with their name
-const getReviewsByName = async (req, res, next) => {
-  const reviewName = req.params.reviewName;
-  let reviews;
-  try {
-    reviews = await Review.find({ reviewedName: reviewName }, null, {
-      sort: { createdAt: -1 },
-    }).populate("author");
-  } catch (err) {
-    const error = new HttpError(
-      "Something went wrong, please try again later",
-      500
-    );
-    return next(error);
-  }
-
-  if (!reviews) {
-    return next(
-      new HttpError("Could not find a reviews with provided name", 404)
-    );
-  }
-  res.json({
-    reviews,
-  });
-};
-
 // Get reviews authored by a user, using their id
 const getReviewsByUserId = async (req, res, next) => {
   const userId = req.params.userId;
@@ -138,13 +112,13 @@ const createNewReview = async (req, res, next) => {
     images,
   } = req.body;
   const createdReview = new Review({
-    reviewedName,
-    introText,
+    reviewedName: reviewedName.trim(),
+    introText: introText.trim(),
     category,
-    website,
-    telephone,
-    address,
-    reviewDetails,
+    website: website.trim(),
+    telephone: telephone.trim(),
+    address: address.trim(),
+    reviewDetails: reviewDetails.trim(),
     images,
     author: req.user,
   });
