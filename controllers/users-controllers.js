@@ -232,7 +232,7 @@ const updateProfilePicture = async (req, res, next) => {
   }
   //Check if there is a req.file object
   if (req.file) {
-    //Change buffer multer middleware returns us to a file cloudinary can parse
+    //Check buffer multer middleware returns us to a file cloudinary can parse
     const file = dataUri(req);
     return uploader
       .upload(file, {

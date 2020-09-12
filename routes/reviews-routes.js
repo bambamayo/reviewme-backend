@@ -3,6 +3,7 @@ const { check } = require("express-validator");
 
 const reviewsControllers = require("../controllers/reviews-controllers");
 const auth = require("../middleware/check-auth");
+const { multerUploadsMultiple } = require("../config/multer");
 
 const router = express.Router();
 
@@ -11,9 +12,6 @@ router.get("/", reviewsControllers.getAllReviews);
 
 //GET review with review id, public route
 router.get("/:id", reviewsControllers.getReviewById);
-
-//GET reviews with a particular name, public route
-router.get("/:reviewName/list", reviewsControllers.getReviewsByName);
 
 //GET reviews related to a particular user, public route *change to username maybe
 router.get("/:userId/reviews", reviewsControllers.getReviewsByUserId);
@@ -53,6 +51,17 @@ router.post(
 
 //PATCH, update existing review, private route
 router.patch("/:id", auth, reviewsControllers.updateReview);
+
+//PATCH, update existing review images, private route
+router.patch(
+  "/:id/images",
+  auth,
+  multerUploadsMultiple,
+  reviewsControllers.addReviewImages
+);
+
+// //PATCH, delete existing review image(s), provate route
+// router.patch("/:id/images/delete", auth, reviewsControllers.deleteReviewImages);
 
 //PATCH, update existing review, private route
 router.delete("/:id", auth, reviewsControllers.deleteReview);

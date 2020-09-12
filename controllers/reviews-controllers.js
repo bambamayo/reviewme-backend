@@ -4,6 +4,8 @@ const { validationResult } = require("express-validator");
 const HttpError = require("../models/http-error");
 const Review = require("../models/review-model");
 const User = require("../models/user-model");
+const { uploader } = require("../config/cloudinaryConfig");
+const { dataUriMultiple } = require("../config/multer");
 
 // Get all reviews
 const getAllReviews = async (req, res, next) => {
@@ -200,6 +202,45 @@ const updateReview = async (req, res, next) => {
   }
 };
 
+const addReviewImages = async (req, res, next) => {
+  //Create a variable to check if user has authorization to perform action
+  let verifyUser;
+  try {
+    //Get user with the user id
+    verifyUser = await User.findById(req.params.id);
+  } catch (error) {
+    return next(new HttpError("Could not update user, please try again", 500));
+  }
+
+  if (verifyUser.id.toString() !== req.user) {
+    return next(
+      new HttpError("You are not allowed to perform this operation", 401)
+    );
+  }
+
+  if (req.files) {
+    for (let i = 0; i < req.files.length; i++) {
+      const sentImg = dataUriMultiple(req.files, i);
+
+      uploader
+        .upload(sentImg, {
+          folder: "review_images/",
+        })
+        .then((result) => {
+          console.log(result);
+          res.json({ msg: "workedd" });
+        })
+        .catch((err) => {
+          console.log(err);
+          res.send(err);
+        });
+      next();
+    }
+  } else {
+    return next(new HttpError("No image(s) to upload", 404));
+  }
+};
+
 // Delete existing review
 const deleteReview = async (req, res, next) => {
   const reviewId = req.params.id;
@@ -254,4 +295,5 @@ exports.getReviewsCount = getReviewsCount;
 exports.createNewReview = createNewReview;
 exports.updateReview = updateReview;
 exports.deleteReview = deleteReview;
-exports.getReviewsByName = getReviewsByName;
+exports.addReviewImages = addReviewImages;
+// exports.deleteReviewImages = deleteReviewImages;
