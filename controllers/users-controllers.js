@@ -49,9 +49,7 @@ const signupUser = async (req, res, next) => {
     emailTaken = await User.findOne({ email: email });
     usernameTaken = await User.findOne({ username: username });
   } catch {
-    return next(
-      new HttpError("Signing up failed, please try again later", 500)
-    );
+    return next(new HttpError("Signing up failed, please try again", 500));
   }
 
   if (emailTaken) {
@@ -101,9 +99,7 @@ const signupUser = async (req, res, next) => {
       { expiresIn: "1h" }
     );
   } catch (error) {
-    return next(
-      new HttpError("Signing up failed, please try again later", 500)
-    );
+    return next(new HttpError("Signing up failed, please try again", 500));
   }
 
   res.status(201).json({
@@ -155,7 +151,7 @@ const loginUser = async (req, res, next) => {
       { expiresIn: "1h" }
     );
   } catch (error) {
-    return next(new HttpError("Log in failed, please try again later", 500));
+    return next(new HttpError("Log in failed, please try again", 500));
   }
 
   res.json({
@@ -196,9 +192,7 @@ const updateUser = async (req, res, next) => {
     }
     return res.status(200).json({ user });
   } catch (err) {
-    return next(
-      new HttpError("Could not update user, please try again later", 500)
-    );
+    return next(new HttpError("Could not update user, please try again", 500));
   }
 };
 
@@ -259,7 +253,7 @@ const updateProfilePicture = async (req, res, next) => {
           });
         } catch (error) {
           return next(
-            new HttpError("Could not update user, please try again later", 500)
+            new HttpError("Could not update user, please try again", 500)
           );
         }
       })
@@ -321,9 +315,7 @@ const deleteProfilePicture = async (req, res, next) => {
       user,
     });
   } catch (error) {
-    return next(
-      new HttpError("Could not update user, please try again later", 500)
-    );
+    return next(new HttpError("Could not update user, please try again", 500));
   }
 };
 

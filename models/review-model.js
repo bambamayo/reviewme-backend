@@ -12,7 +12,7 @@ const reviewSchema = new Schema(
     telephone: { type: String, default: null },
     address: { type: String, default: null },
     reviewDetails: { type: String, required: true },
-    images: [{ type: String, default: [] }],
+    images: [{ type: String }],
     author: { type: mongoose.Types.ObjectId, required: true, ref: "User" },
   },
   {
