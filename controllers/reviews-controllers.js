@@ -34,11 +34,9 @@ const getReviewById = async (req, res, next) => {
   try {
     review = await Review.findById(reviewId).populate("author");
   } catch (err) {
-    const error = new HttpError(
-      "Something went wrong, please try again later",
-      500
+    return next(
+      new HttpError("Something went wrong, please try again later", 500)
     );
-    return next(error);
   }
 
   if (!review) {
@@ -111,7 +109,6 @@ const createNewReview = async (req, res, next) => {
     telephone,
     address,
     reviewDetails,
-    images,
   } = req.body;
   const createdReview = new Review({
     reviewedName: reviewedName.trim(),
@@ -121,7 +118,6 @@ const createNewReview = async (req, res, next) => {
     telephone: telephone.trim(),
     address: address.trim(),
     reviewDetails: reviewDetails.trim(),
-    images,
     author: req.user,
   });
 
@@ -206,35 +202,75 @@ const addReviewImages = async (req, res, next) => {
   //Create a variable to check if user has authorization to perform action
   let verifyUser;
   try {
-    //Get user with the user id
-    verifyUser = await User.findById(req.params.id);
+    verifyUser = await Review.findById(req.params.id);
   } catch (error) {
-    return next(new HttpError("Could not update user, please try again", 500));
+    return next(new HttpError("Could not update review, please try again"));
   }
 
-  if (verifyUser.id.toString() !== req.user) {
+  if (verifyUser.author.toString() !== req.user) {
     return next(
       new HttpError("You are not allowed to perform this operation", 401)
     );
   }
 
   if (req.files) {
-    for (let i = 0; i < req.files.length; i++) {
-      const sentImg = dataUriMultiple(req.files, i);
+    let multipleUploads = new Promise(async (resolve, reject) => {
+      let upload_len = req.files.length;
+      let upload_res = new Array();
 
-      uploader
-        .upload(sentImg, {
-          folder: "review_images/",
-        })
-        .then((result) => {
-          console.log(result);
-          res.json({ msg: "workedd" });
-        })
-        .catch((err) => {
-          console.log(err);
-          res.send(err);
-        });
-      next();
+      for (let i = 0; i <= upload_len; i++) {
+        if (upload_res.length === upload_len) {
+          resolve(upload_res);
+        } else {
+          const sentImg = dataUriMultiple(req.files, i);
+
+          await uploader.upload(
+            sentImg,
+            {
+              folder: "review_images/",
+            },
+            (error, result) => {
+              if (result) {
+                upload_res.push(result.public_id);
+              } else if (error) {
+                reject(error);
+              }
+            }
+          );
+        }
+      }
+    })
+      .then((result) => result)
+      .catch((error) => error);
+
+    let upload = await multipleUploads;
+    let review;
+    try {
+      review = await Review.findByIdAndUpdate(
+        req.params.id,
+        {
+          $push: {
+            images: {
+              $each: [...upload],
+            },
+          },
+        },
+        { new: true }
+      ).populate("author");
+      //Return error if no review with specified id
+      if (!review) {
+        return next(new HttpError("Invalid review id", 404));
+      }
+      // Return success message with user details
+      return res.status(200).json({
+        message: "Your have successfully uploaded images",
+        review,
+      });
+    } catch (error) {
+      console.log(error, "error");
+      return next(
+        new HttpError("Could not update review, please try again", 500)
+      );
     }
   } else {
     return next(new HttpError("No image(s) to upload", 404));
