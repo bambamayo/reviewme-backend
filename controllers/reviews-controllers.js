@@ -277,7 +277,47 @@ const addReviewImages = async (req, res, next) => {
   }
 };
 
-// Delete existing review
+//----Delete review image
+const deleteReviewImages = async (req, res, next) => {
+  let verifyUser;
+
+  try {
+    verifyUser = await Review.findById(req.params.id);
+  } catch (error) {
+    return next(new HttpError("Could not delete review, please try again"));
+  }
+
+  if (verifyUser.author.toString() !== req.user) {
+    return next(
+      new HttpError("You are not allowed to perform this operation", 401)
+    );
+  }
+
+  let review;
+  try {
+    review = await Review.findById(req.params.id).populate("author");
+  } catch (error) {
+    return next(new HttpError("Something went wrong could not delete image"));
+  }
+
+  uploader.destroy(req.body.publicId, async function (error, result) {
+    if (error) {
+      return next(
+        new HttpError("Could not perform operation, please try again")
+      );
+    }
+  });
+
+  review.images.pull(req.body.publicId);
+  await review.save();
+
+  return res.status(200).json({
+    message: "image deleted successfully",
+    review,
+  });
+};
+
+//----Delete existing review
 const deleteReview = async (req, res, next) => {
   const reviewId = req.params.id;
   let review;
@@ -308,6 +348,8 @@ const deleteReview = async (req, res, next) => {
     );
   }
 
+  let imagesToDelete = review.images;
+
   try {
     const sess = await mongoose.startSession();
     sess.startTransaction();
@@ -321,6 +363,14 @@ const deleteReview = async (req, res, next) => {
     );
   }
 
+  for (let i = 0; i < imagesToDelete.length; i++) {
+    uploader.destroy(imagesToDelete[i], function (error, result) {
+      if (error) {
+        console.log(error);
+      }
+    });
+  }
+
   res.status(204).end();
 };
 
@@ -332,4 +382,4 @@ exports.createNewReview = createNewReview;
 exports.updateReview = updateReview;
 exports.deleteReview = deleteReview;
 exports.addReviewImages = addReviewImages;
-// exports.deleteReviewImages = deleteReviewImages;
+exports.deleteReviewImages = deleteReviewImages;

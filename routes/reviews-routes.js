@@ -60,8 +60,8 @@ router.patch(
   reviewsControllers.addReviewImages
 );
 
-// //PATCH, delete existing review image(s), provate route
-// router.patch("/:id/images/delete", auth, reviewsControllers.deleteReviewImages);
+//PATCH, delete existing review image(s), provate route
+router.patch("/:id/images/delete", auth, reviewsControllers.deleteReviewImages);
 
 //PATCH, update existing review, private route
 router.delete("/:id", auth, reviewsControllers.deleteReview);
