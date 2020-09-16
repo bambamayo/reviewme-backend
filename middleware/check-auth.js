@@ -7,22 +7,15 @@ module.exports = (req, res, next) => {
     return next();
   }
 
-  //Get token from header
-  const token = req.header("x-auth-token");
-
-  //Check if token is not present
-  if (!token) {
-    return next(
-      new HttpError("You do not have authorization to perform this operation")
-    );
-  }
-
   try {
+    const token = req.headers.authorization.split(" ")[1];
+    if (!token) {
+      throw new Error("Authentication failed!");
+    }
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
     req.user = decoded.userId;
     next();
   } catch (error) {
-    return next(new HttpError("Token is not valid", 401));
+    return next(new HttpError("Authentication failed!", 401));
   }
 };
