@@ -185,7 +185,7 @@ const updateReview = async (req, res, next) => {
   try {
     const review = await Review.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
-    });
+    }).populate("author");
 
     if (!review) {
       return next(new HttpError("Invalid review ID", 404));
