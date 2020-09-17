@@ -111,7 +111,7 @@ const createNewReview = async (req, res, next) => {
     reviewDetails,
   } = req.body;
   const createdReview = new Review({
-    reviewedName: reviewedName.trim(),
+    reviewedName: reviewedName.trim().toLowerCase(),
     introText: introText.trim(),
     category,
     website: website.trim(),
