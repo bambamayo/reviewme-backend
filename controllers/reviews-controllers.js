@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const { validationResult } = require("express-validator");
+const io = require("../socket");
 
 const HttpError = require("../models/http-error");
 const Review = require("../models/review-model");
@@ -52,7 +53,9 @@ const getReviewsByUserId = async (req, res, next) => {
   const userId = req.params.userId;
   let userReviews;
   try {
-    userReviews = await Review.find({ author: userId }).populate({
+    userReviews = await Review.find({ author: userId }, null, {
+      sort: { createdAt: -1 },
+    }).populate({
       path: "author",
     });
   } catch (err) {
@@ -134,7 +137,7 @@ const createNewReview = async (req, res, next) => {
   try {
     const sess = await mongoose.startSession();
     sess.startTransaction();
-    await createdReview.save({ session: sess });
+    await createdReview.save({ session: sess }).populate("author");
     user.postedReviews.push(createdReview);
     await user.save({ session: sess });
     await sess.commitTransaction();
@@ -145,6 +148,8 @@ const createNewReview = async (req, res, next) => {
     );
     return next(error);
   }
+
+  io.getIO().emit("reviews", { action: "create", review: createdReview });
 
   res.status(201).json({
     createdReview,
@@ -185,11 +190,12 @@ const updateReview = async (req, res, next) => {
   try {
     const review = await Review.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
-    });
+    }).populate("author");
 
     if (!review) {
       return next(new HttpError("Invalid review ID", 404));
     }
+    io.getIO().emit("reviews", { action: "update", review: review });
     return res.status(200).json({ review });
   } catch (err) {
     return next(
@@ -370,6 +376,8 @@ const deleteReview = async (req, res, next) => {
       }
     });
   }
+
+  io.getIO().emit("reviews", { action: "delete", review: reviewId });
 
   res.status(204).end();
 };
