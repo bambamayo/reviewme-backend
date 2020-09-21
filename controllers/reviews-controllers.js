@@ -137,9 +137,11 @@ const createNewReview = async (req, res, next) => {
   try {
     const sess = await mongoose.startSession();
     sess.startTransaction();
-    await createdReview.save({ session: sess }).populate("author");
+    await createdReview.save({ session: sess });
+    createdReview.populate("author").execPopulate();
     user.postedReviews.push(createdReview);
     await user.save({ session: sess });
+
     await sess.commitTransaction();
   } catch (err) {
     const error = new HttpError(
