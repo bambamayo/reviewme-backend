@@ -269,13 +269,13 @@ const addReviewImages = async (req, res, next) => {
       if (!review) {
         return next(new HttpError("Invalid review id", 404));
       }
-      // Return success message with user details
+      io.getIO().emit("reviews", { action: "update", review: review });
+      // Return success message with review details
       return res.status(200).json({
         message: "Your have successfully uploaded images",
         review,
       });
     } catch (error) {
-      console.log(error, "error");
       return next(
         new HttpError("Could not update review, please try again", 500)
       );
@@ -318,6 +318,8 @@ const deleteReviewImages = async (req, res, next) => {
 
   review.images.pull(req.body.publicId);
   await review.save();
+
+  io.getIO().emit("reviews", { action: "update", review: review });
 
   return res.status(200).json({
     message: "image deleted successfully",
